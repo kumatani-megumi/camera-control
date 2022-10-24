@@ -1,35 +1,11 @@
-import "./style.css";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import * as dat from "lil-gui";
-
-/**
- * Base
- */
-// Debug
-const gui = new dat.GUI();
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
 
 // Scene
 const scene = new THREE.Scene();
-
-/**
- * Floor
- */
-const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(10, 10),
-  new THREE.MeshStandardMaterial({
-    color: "#444444",
-    metalness: 0,
-    roughness: 0.5,
-  })
-);
-floor.receiveShadow = true;
-floor.rotation.x = -Math.PI * 0.5;
-scene.add(floor);
 
 /**
  * Lights
@@ -48,43 +24,12 @@ directionalLight.shadow.camera.bottom = -7;
 directionalLight.position.set(5, 5, 5);
 scene.add(directionalLight);
 
-/**
- * Sizes
- */
+// Renderer
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
 
-// Models
-const gltfLoader = new GLTFLoader();
-gltfLoader.load("public/gltf/cubeanimation.gltf", (gltf) => {
-  console.log("success");
-  console.log(gltf);
-  // const children = [...gltf.scene.children];
-  // for (const child of children) {
-  //   scene.add(child);
-  // }
-  initStage(gltf);
-});
-
-// window.addEventListener("resize", () => {
-//   // Update sizes
-//   sizes.width = window.innerWidth;
-//   sizes.height = window.innerHeight;
-
-//   // Update camera
-//   camera.aspect = sizes.width / sizes.height;
-//   camera.updateProjectionMatrix();
-
-//   // Update renderer
-//   renderer.setSize(sizes.width, sizes.height);
-//   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-// });
-
-/**
- * Init
- */
 // Base camera
 let camera = new THREE.PerspectiveCamera(
   75,
@@ -94,10 +39,24 @@ let camera = new THREE.PerspectiveCamera(
 );
 camera.position.z = 5;
 
-// Controls
-// const controls = new OrbitControls(camera, canvas);
-// controls.target.set(0, 0.75, 0);
-// controls.enableDamping = true;
+// GLTFLoader
+const gltfLoader = new GLTFLoader();
+gltfLoader.load("public/gltf/cubeanimation.gltf", (gltf) => {
+  console.log(gltf);
+  initStage(gltf);
+});
+
+// Add stage elements
+let animationMixer, animationClip, animationAction;
+
+function initStage(gltf) {
+  scene.add(gltf.scene);
+  camera = gltf.cameras[0];
+  animationMixer = new THREE.AnimationMixer(camera.parent);
+  animationClip = gltf.animations[0];
+  animationAction = animationMixer.clipAction(animationClip); // animationAction.play();
+  animationAction.play();
+}
 
 /**
  * Renderer
@@ -110,20 +69,6 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-// Add stage elements
-let animationMixer, animationClip, animationAction;
-
-function initStage(gltf) {
-  scene.add(gltf.scene);
-  camera = gltf.cameras[0];
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  animationMixer = new THREE.AnimationMixer(camera.parent);
-  animationClip = gltf.animations[0];
-  animationAction = animationMixer.clipAction(animationClip);
-  animationAction.play();
-  animationAction.paused = true;
-}
 /**
  * Animate
  */
@@ -131,7 +76,7 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   if (animationMixer) {
-    animationMixer.update(clock.getDelta());
+    animationMixer.update(clock.getDelta);
   }
   // Update controls
   // controls.update();
@@ -140,16 +85,7 @@ const tick = () => {
   renderer.render(scene, camera);
 
   // Call tick again on the next frame
-  // window.requestAnimationFrame(tick);
+  window.requestAnimationFrame(tick);
 };
 
 tick();
-
-/**
- * Resize
- */
-// function resize() {
-//   camera.aspect = window.innerWidth / window.innerHeight;
-//   camera.updateProjectionMatrix();
-//   renderer.setSize(window.innerWidth, window.innerHeight);
-// }
