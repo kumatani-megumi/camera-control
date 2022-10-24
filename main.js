@@ -61,26 +61,26 @@ const gltfLoader = new GLTFLoader();
 gltfLoader.load("public/gltf/cubeanimation.gltf", (gltf) => {
   console.log("success");
   console.log(gltf);
-  const children = [...gltf.scene.children];
-  for (const child of children) {
-    scene.add(child);
-  }
+  // const children = [...gltf.scene.children];
+  // for (const child of children) {
+  //   scene.add(child);
+  // }
   initStage(gltf);
 });
 
-window.addEventListener("resize", () => {
-  // Update sizes
-  sizes.width = window.innerWidth;
-  sizes.height = window.innerHeight;
+// window.addEventListener("resize", () => {
+//   // Update sizes
+//   sizes.width = window.innerWidth;
+//   sizes.height = window.innerHeight;
 
-  // Update camera
-  camera.aspect = sizes.width / sizes.height;
-  camera.updateProjectionMatrix();
+//   // Update camera
+//   camera.aspect = sizes.width / sizes.height;
+//   camera.updateProjectionMatrix();
 
-  // Update renderer
-  renderer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-});
+//   // Update renderer
+//   renderer.setSize(sizes.width, sizes.height);
+//   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// });
 
 /**
  * Init
@@ -92,13 +92,12 @@ let camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.set(2, 2, 2);
-scene.add(camera);
+camera.position.z = 5;
 
 // Controls
-const controls = new OrbitControls(camera, canvas);
-controls.target.set(0, 0.75, 0);
-controls.enableDamping = true;
+// const controls = new OrbitControls(camera, canvas);
+// controls.target.set(0, 0.75, 0);
+// controls.enableDamping = true;
 
 /**
  * Renderer
@@ -117,9 +116,11 @@ let animationMixer, animationClip, animationAction;
 function initStage(gltf) {
   scene.add(gltf.scene);
   camera = gltf.cameras[0];
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
   animationMixer = new THREE.AnimationMixer(camera.parent);
   animationClip = gltf.animations[0];
-  animationAction = animationMixer.clipAction(animationMixer);
+  animationAction = animationMixer.clipAction(animationClip);
   animationAction.play();
   animationAction.paused = true;
 }
@@ -127,24 +128,28 @@ function initStage(gltf) {
  * Animate
  */
 const clock = new THREE.Clock();
-let previousTime = 0;
 
 const tick = () => {
-  const elapsedTime = clock.getElapsedTime();
-  const deltaTime = elapsedTime - previousTime;
-  previousTime = elapsedTime;
   if (animationMixer) {
-    animationMixer.update(deltaTime);
+    animationMixer.update(clock.getDelta());
   }
-
   // Update controls
-  controls.update();
+  // controls.update();
 
   // Render
   renderer.render(scene, camera);
 
   // Call tick again on the next frame
-  window.requestAnimationFrame(tick);
+  // window.requestAnimationFrame(tick);
 };
 
 tick();
+
+/**
+ * Resize
+ */
+// function resize() {
+//   camera.aspect = window.innerWidth / window.innerHeight;
+//   camera.updateProjectionMatrix();
+//   renderer.setSize(window.innerWidth, window.innerHeight);
+// }
