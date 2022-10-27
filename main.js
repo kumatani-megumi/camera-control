@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import Stats from "three/examples/jsm/libs/stats.module";
 
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
@@ -10,19 +11,6 @@ const scene = new THREE.Scene();
 /**
  * Lights
  */
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-scene.add(ambientLight);
-
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
-directionalLight.castShadow = true;
-directionalLight.shadow.mapSize.set(1024, 1024);
-directionalLight.shadow.camera.far = 15;
-directionalLight.shadow.camera.left = -7;
-directionalLight.shadow.camera.top = 7;
-directionalLight.shadow.camera.right = 7;
-directionalLight.shadow.camera.bottom = -7;
-directionalLight.position.set(5, 5, 5);
-scene.add(directionalLight);
 
 // Renderer
 const sizes = {
@@ -54,8 +42,22 @@ function initStage(gltf) {
   camera = gltf.cameras[0];
   animationMixer = new THREE.AnimationMixer(camera.parent);
   animationClip = gltf.animations[0];
-  animationAction = animationMixer.clipAction(animationClip); // animationAction.play();
+  animationAction = animationMixer.clipAction(animationClip);
   animationAction.play();
+  animationAction.paused = true;
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+  scene.add(ambientLight);
+
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+  directionalLight.castShadow = true;
+  directionalLight.shadow.mapSize.set(1024, 1024);
+  directionalLight.shadow.camera.far = 15;
+  directionalLight.shadow.camera.left = -7;
+  directionalLight.shadow.camera.top = 7;
+  directionalLight.shadow.camera.right = 7;
+  directionalLight.shadow.camera.bottom = -7;
+  directionalLight.position.set(5, 5, 5);
+  scene.add(directionalLight);
 }
 
 /**
@@ -78,8 +80,6 @@ const tick = () => {
   if (animationMixer) {
     animationMixer.update(clock.getDelta);
   }
-  // Update controls
-  // controls.update();
 
   // Render
   renderer.render(scene, camera);
